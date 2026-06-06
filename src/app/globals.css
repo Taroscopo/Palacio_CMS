@@ -1,0 +1,386 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ============================================================
+   PALACIO CMS — Tema Ejecutivo Limpio (Estilo Apple)
+   ============================================================ */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Fondo principal: blanco puro */
+  --background: #ffffff;
+  --foreground: #111111;
+
+  /* Tarjetas y popovers: blanco con sutiles separaciones */
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+
+  /* Primario: negro sólido (botones y acciones principales) */
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+
+  /* Secundario: gris muy claro para fondos de sección */
+  --secondary: #f5f5f7;
+  --secondary-foreground: #111111;
+
+  /* Muted: texto secundario y fondos deshabilitados */
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+
+  /* Acento: cian oscuro exclusivo para logo, estados activos y confirmaciones */
+  --accent: #0e7490;
+  --accent-foreground: #ffffff;
+
+  /* Destructivo: rojo para errores */
+  --destructive: #dc2626;
+
+  /* Bordes e inputs: grises sutiles */
+  --border: #e5e5ea;
+  --input: #e5e5ea;
+  --ring: #0e7490;
+
+  /* Charts */
+  --chart-1: #0e7490;
+  --chart-2: #111111;
+  --chart-3: #86868b;
+  --chart-4: #d1d1d6;
+  --chart-5: #f5f5f7;
+
+  /* Sidebar */
+  --sidebar: #f5f5f7;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0e7490;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e5ea;
+  --sidebar-ring: #0e7490;
+}
+
+.dark {
+  --background: #ffffff;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f7;
+  --secondary-foreground: #111111;
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+  --accent: #0e7490;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --border: #e5e5ea;
+  --input: #e5e5ea;
+  --ring: #0e7490;
+  --chart-1: #0e7490;
+  --chart-2: #111111;
+  --chart-3: #86868b;
+  --chart-4: #d1d1d6;
+  --chart-5: #f5f5f7;
+  --sidebar: #f5f5f7;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0e7490;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e5ea;
+  --sidebar-ring: #0e7490;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================================
+   PALACIO CMS — Estilos Globales Ejecutivos
+   ============================================================ */
+
+/* Fondo base de la aplicación */
+.palacio-bg {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Panel con fondo gris claro para separar del blanco principal */
+.palacio-panel {
+  background-color: #f5f5f7;
+  border-right: 1px solid #e5e5ea;
+}
+
+/* Tarjeta estilo Apple: sombra sutil, bordes redondeados, fondo blanco */
+.palacio-card {
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.palacio-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Botón primario estilo Apple: negro sólido, escala al hover */
+.btn-apple {
+  background-color: #111111;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-apple:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-apple:active {
+  transform: scale(0.98);
+}
+
+.btn-apple:disabled {
+  background-color: #c7c7cc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Botón secundario estilo Apple: fondo gris claro, texto oscuro */
+.btn-apple-secondary {
+  background-color: #f5f5f7;
+  color: #111111;
+  border: 1px solid #e5e5ea;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-apple-secondary:hover {
+  background-color: #e5e5ea;
+  transform: scale(1.01);
+}
+
+.btn-apple-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Acento cian oscuro exclusivo para logo y estados activos */
+.accent-cyan {
+  color: #0e7490;
+}
+
+.accent-cyan-bg {
+  background-color: #0e7490;
+  color: #ffffff;
+}
+
+.accent-cyan-border {
+  border-color: #0e7490;
+}
+
+/* Input estilo Apple: limpio, borde gris, focus con acento cian */
+.input-apple {
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 8px;
+  color: #111111;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-apple:focus {
+  outline: none;
+  border-color: #0e7490;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.12);
+}
+
+.input-apple::placeholder {
+  color: #c7c7cc;
+}
+
+/* Separador limpio */
+.divider {
+  height: 1px;
+  background-color: #e5e5ea;
+}
+
+/* Scrollbar personalizado tipo Apple */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c7c7cc;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease forwards;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Preview frame estilo Apple */
+.preview-frame {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px #e5e5ea,
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Badge de estado */
+.status-gratis {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-anual {
+  background-color: #ccfbf1;
+  color: #0e7490;
+}
+
+/* Toggle switch estilo Apple */
+.toggle-apple {
+  position: relative;
+  display: inline-flex;
+  height: 28px;
+  width: 48px;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.toggle-apple::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.toggle-apple.active {
+  background-color: #0e7490;
+}
+
+.toggle-apple.active::after {
+  transform: translateX(20px);
+}
+
+.toggle-apple.inactive {
+  background-color: #d1d1d6;
+}
+
+/* Locked overlay para secciones bloqueadas */
+.locked-overlay {
+  position: relative;
+}
+
+.locked-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(4px);
+  border-radius: inherit;
+  z-index: 10;
+}
+
+.locked-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+}
