@@ -615,7 +615,7 @@ export function VisualEditor({
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
           <div className="bg-[#111111] text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 max-w-sm">
             <Shield className="w-4 h-4 text-amber-400 shrink-0" />
-            <p className="text-sm">Modo Simulación: Permisos de escritura de GitHub pendientes en .env</p>
+            <p className="text-sm">Modo Simulación: Permisos de escritura de GitHub no configurados (GITHUB_TOKEN pendiente)</p>
             <button onClick={() => setShowSimulacionToast(false)} className="text-white/60 hover:text-white ml-2">
               <X className="w-4 h-4" />
             </button>

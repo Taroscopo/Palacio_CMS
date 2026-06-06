@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
         absoluteUrl,
         simulation: true,
         cambiosEsteMes,
-        message: 'Modo Simulación: GITHUB_TOKEN pendiente en .env',
+        message: 'Modo Simulación: GITHUB_TOKEN no configurado',
       });
     }
 

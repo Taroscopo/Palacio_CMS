@@ -94,8 +94,25 @@ export async function POST(request: NextRequest) {
         .eq('email', email)
         .single();
 
-      if (clienteError || !cliente) {
-        console.warn('[API Auth Login] Email no encontrado en tabla clientes:', email, clienteError?.message);
+      if (clienteError) {
+        console.error('[API Auth Login] Error al consultar base de datos:', clienteError.message);
+        
+        // PGRST116 indica que no se encontró ninguna fila con ese correo (User Not Found)
+        if (clienteError.code === 'PGRST116') {
+          return NextResponse.json<LoginErrorResponse>(
+            { success: false, error: 'Credenciales inválidas. Verifica tu correo y contraseña.' },
+            { status: 401 }
+          );
+        }
+        
+        // Otro error de base de datos o de red
+        return NextResponse.json<LoginErrorResponse>(
+          { success: false, error: `Error de conexión con Supabase: ${clienteError.message || 'No se pudo contactar al servidor'}` },
+          { status: 500 }
+        );
+      }
+
+      if (!cliente) {
         return NextResponse.json<LoginErrorResponse>(
           { success: false, error: 'Credenciales inválidas. Verifica tu correo y contraseña.' },
           { status: 401 }
