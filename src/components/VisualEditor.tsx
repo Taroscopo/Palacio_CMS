@@ -36,6 +36,7 @@ import {
   Github,
   Activity,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SeccionParseada } from '@/lib/html-parser';
@@ -165,6 +166,7 @@ export function VisualEditor({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showSimulacionToast, setShowSimulacionToast] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'saving' | 'syncing' | 'success' | 'error'>('idle');
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const campoRefs = useRef<Record<string, HTMLElement>>({});
@@ -341,9 +343,33 @@ export function VisualEditor({
     reader.readAsDataURL(file);
   }, [sustratoId, handleCampoChange, setCambiosEsteMes, setShowLimitModal]);
 
+  const handleReload = useCallback(async (forceBypassCache = false) => {
+    if (!sustratoId) return;
+    setSyncStatus('syncing');
+    try {
+      const url = `/api/editor/load?sustratoId=${encodeURIComponent(sustratoId)}${forceBypassCache ? '&nocache=1' : ''}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Error al recargar');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Error al recargar');
+
+      setRawHtml(data.html || '');
+      setSeccionesApi(data.secciones || []);
+      setTotalCampos(data.totalCampos || 0);
+      setCamposEditados({}); // Limpiar cambios locales
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch (err) {
+      console.error('[VisualEditor] Error al sincronizar:', err);
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    }
+  }, [sustratoId]);
+
   const handleGuardar = useCallback(async () => {
     if (!puedeGuardar) { setShowLimitModal(true); return; }
     setIsSaving(true);
+    setSyncStatus('saving');
     try {
       const res = await fetch('/api/editor/save', {
         method: 'POST',
@@ -355,6 +381,7 @@ export function VisualEditor({
       // Manejar 403 — Plan agotado (desde el backend)
       if (res.status === 403) {
         setShowLimitModal(true);
+        setSyncStatus('idle');
         if (typeof data.cambiosEsteMes === 'number') {
           setCambiosEsteMes(data.cambiosEsteMes);
         }
@@ -364,6 +391,8 @@ export function VisualEditor({
       // Manejar error del servidor
       if (!data.success) {
         console.error('[VisualEditor] Error al guardar:', data.error);
+        setSyncStatus('error');
+        setTimeout(() => setSyncStatus('idle'), 3000);
         return;
       }
 
@@ -373,15 +402,44 @@ export function VisualEditor({
       }
 
       // Mostrar toast de simulación si aplica
-      if (data.simulation) { setShowSimulacionToast(true); setTimeout(() => setShowSimulacionToast(false), 3000); }
+      if (data.simulation) {
+        setShowSimulacionToast(true);
+        setTimeout(() => setShowSimulacionToast(false), 3000);
+        setSaveSuccess(true);
+        setSyncStatus('success');
+        setTimeout(() => {
+          setSaveSuccess(false);
+          setSyncStatus('idle');
+        }, 2000);
+        return;
+      }
+
+      // Esperar 1.5 segundos para dar tiempo a GitHub a indexar el commit
+      setSyncStatus('syncing');
+      await new Promise((r) => setTimeout(r, 1500));
+
+      // Cargar HTML actualizado desde GitHub anulando caché del servidor y busteando CDN
+      const url = `/api/editor/load?sustratoId=${encodeURIComponent(sustratoId)}&nocache=1`;
+      const resLoad = await fetch(url);
+      if (!resLoad.ok) throw new Error('Error al recargar desde GitHub');
+      const loadData = await resLoad.json();
+      if (!loadData.success) throw new Error(loadData.error || 'Error al recargar');
+
+      setRawHtml(loadData.html || '');
+      setSeccionesApi(loadData.secciones || []);
+      setTotalCampos(loadData.totalCampos || 0);
+      setCamposEditados({}); // Limpiar cambios locales
 
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
+      setSyncStatus('success');
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setSyncStatus('idle');
+      }, 3000);
     } catch (err) {
       console.error('[VisualEditor] Error de red al guardar:', err);
-      // Error de red — no incrementar contador (no sabemos si el servidor procesó)
-      setShowSimulacionToast(true);
-      setTimeout(() => setShowSimulacionToast(false), 3000);
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 3000);
     } finally {
       setIsSaving(false);
     }
@@ -495,6 +553,42 @@ export function VisualEditor({
             <Badge variant="outline" className={cn('text-[10px] border-0 font-medium', isPremium ? 'status-anual' : 'status-gratis')}>
               {isPremium ? <Crown className="w-3 h-3 mr-1" /> : <Lock className="w-3 h-3 mr-1" />}{isPremium ? 'Anual' : 'Gratis'}
             </Badge>
+
+            {/* Botón de Sincronización Manual */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleReload(true)}
+              disabled={syncStatus === 'syncing' || syncStatus === 'saving'}
+              className="border-[#0e7490] text-[#0e7490] hover:bg-cyan-50 h-8 flex items-center gap-1.5 px-2.5 transition-all duration-200 text-xs"
+            >
+              <RefreshCw className={cn("w-3.5 h-3.5", (syncStatus === 'syncing' || syncStatus === 'saving') && "animate-spin")} />
+              Sincronizar
+            </Button>
+
+            {/* Indicador de Estado de Sincronización */}
+            {syncStatus !== 'idle' && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-[10px] font-medium h-8 px-2 flex items-center gap-1 border border-transparent transition-all duration-300 animate-fade-in select-none',
+                  syncStatus === 'saving' || syncStatus === 'syncing' ? 'bg-cyan-50 text-[#0e7490] border-cyan-100' :
+                  syncStatus === 'success' ? 'bg-green-50 text-green-700 border-green-100' :
+                  'bg-red-50 text-red-700 border-red-100'
+                )}
+              >
+                {syncStatus === 'saving' && <Loader2 className="w-3 h-3 animate-spin shrink-0" />}
+                {syncStatus === 'syncing' && <Loader2 className="w-3 h-3 animate-spin shrink-0" />}
+                {syncStatus === 'success' && <Check className="w-3 h-3 shrink-0" />}
+                {syncStatus === 'error' && <AlertTriangle className="w-3 h-3 shrink-0" />}
+                
+                {syncStatus === 'saving' && 'Guardando...'}
+                {syncStatus === 'syncing' && 'Sincronizando...'}
+                {syncStatus === 'success' && '¡Guardado!'}
+                {syncStatus === 'error' && 'Error de red'}
+              </Badge>
+            )}
+
             <div className="hidden sm:flex items-center gap-2 text-xs text-[#86868b]">
               <div className="w-6 h-6 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[10px] font-bold text-[#111111]">{nombre.charAt(0)}</div>
               <span className="font-mono">{email}</span>

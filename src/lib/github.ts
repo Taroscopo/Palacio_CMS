@@ -221,7 +221,7 @@ export async function downloadIndexHtml(
       : ['main', 'master'];
 
     for (const branch of branches) {
-      const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/index.html`;
+      const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/index.html?t=${Date.now()}`;
       console.log(`[GitHub] Fetch directo: ${rawUrl}`);
 
       const res = await fetch(rawUrl, {

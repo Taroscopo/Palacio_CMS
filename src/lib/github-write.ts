@@ -70,7 +70,7 @@ export async function downloadHtmlLight(
     : ['main', 'master'];
 
   for (const branch of branches) {
-    const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/index.html`;
+    const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/index.html?t=${Date.now()}`;
     try {
       const res = await fetch(rawUrl, {
         method: 'GET',
