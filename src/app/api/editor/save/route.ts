@@ -129,8 +129,12 @@ function applyChangesToHtml(
       // Para imágenes: actualizar src
       valorOriginal = el.attr('src') ?? '';
       el.attr('src', nuevoValor);
+    } else if (tagName === 'iframe') {
+      // Para iframes (como recorridos 360): actualizar src
+      valorOriginal = el.attr('src') ?? '';
+      el.attr('src', nuevoValor);
     } else if (tagName === 'a') {
-      // Para enlaces: actualizar href si es mailto o tel, sino texto
+      // Para enlaces: actualizar href si es mailto o tel, sino actualizar href preservando el contenido
       const currentHref = el.attr('href') ?? '';
       if (currentHref.startsWith('mailto:')) {
         valorOriginal = currentHref.replace('mailto:', '');
@@ -141,8 +145,9 @@ function applyChangesToHtml(
         el.attr('href', `tel:${nuevoValor}`);
         el.text(nuevoValor);
       } else {
-        valorOriginal = el.text() ?? '';
-        el.text(nuevoValor);
+        // Enlace general (como WhatsApp o Instagram): actualizamos el href (URL) y preservamos el texto interno
+        valorOriginal = el.attr('href') ?? '';
+        el.attr('href', nuevoValor);
       }
     } else {
       // Para texto, títulos, etc: actualizar contenido de texto

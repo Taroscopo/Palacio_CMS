@@ -232,7 +232,11 @@ export function parseEditableSections(html: string): ParseResult {
     const tipoCampo = inferirTipoCampo(el, dataEditable);
 
     let textoActual = '';
-    if (tipoCampo === 'imagen') {
+    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
+
+    if (tagName === 'iframe') {
+      textoActual = el.attr('src') ?? '';
+    } else if (tipoCampo === 'imagen') {
       textoActual = el.attr('src') ?? el.attr('alt') ?? '';
     } else if (tipoCampo === 'email') {
       const href = el.attr('href') ?? '';
@@ -241,14 +245,11 @@ export function parseEditableSections(html: string): ParseResult {
         : el.text().trim();
     } else if (tipoCampo === 'telefono') {
       textoActual = el.text().trim();
-    } else if (tipoCampo === 'enlace') {
-      textoActual = el.text().trim();
+    } else if (tipoCampo === 'enlace' && tagName === 'a') {
+      textoActual = el.attr('href') ?? '';
     } else {
       textoActual = el.text().trim();
     }
-
-    const atributos = extraerAtributos(el);
-    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
 
     seccionMap.get(seccion)!.push({
       id: elementId,
@@ -278,8 +279,11 @@ export function parseEditableSections(html: string): ParseResult {
       el.attr('id') ?? `${seccion}-${dataEditable}-child-${index}`;
     const tipoCampo = inferirTipoCampo(el, dataEditable);
 
+    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
     let textoActual = '';
-    if (tipoCampo === 'imagen') {
+    if (tagName === 'iframe') {
+      textoActual = el.attr('src') ?? '';
+    } else if (tipoCampo === 'imagen') {
       textoActual = el.attr('src') ?? el.attr('alt') ?? '';
     } else if (tipoCampo === 'email') {
       const href = el.attr('href') ?? '';
@@ -288,14 +292,11 @@ export function parseEditableSections(html: string): ParseResult {
         : el.text().trim();
     } else if (tipoCampo === 'telefono') {
       textoActual = el.text().trim();
-    } else if (tipoCampo === 'enlace') {
-      textoActual = el.text().trim();
+    } else if (tipoCampo === 'enlace' && tagName === 'a') {
+      textoActual = el.attr('href') ?? '';
     } else {
       textoActual = el.text().trim();
     }
-
-    const atributos = extraerAtributos(el);
-    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
 
     seccionMap.get(seccion)!.push({
       id: elementId,
