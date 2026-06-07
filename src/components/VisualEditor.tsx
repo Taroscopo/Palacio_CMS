@@ -39,7 +39,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { SeccionParseada } from '@/lib/html-parser';
+import { parseEditableSections, type SeccionParseada } from '@/lib/html-parser';
 import {
   MAX_CHANGES_FREE,
   BANNER_INICIAL,
@@ -133,6 +133,35 @@ function LimitModal({ open, onClose, cambios, max }: {
   );
 }
 
+function SuccessModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white border-[#e5e5ea] max-w-sm">
+        <DialogHeader>
+          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mx-auto mb-2">
+            <Check className="w-6 h-6 text-green-600" />
+          </div>
+          <DialogTitle className="text-[#111111] text-center text-base">¡Cambios Guardados!</DialogTitle>
+          <DialogDescription className="text-[#86868b] text-center text-xs">
+            Tus modificaciones se han guardado de forma segura en GitHub.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="bg-[#f5f5f7] rounded-xl p-4 text-center space-y-2 text-xs text-[#86868b]">
+          <p className="font-medium text-[#111111] text-sm">🚀 Despliegue en curso</p>
+          <p>
+            Tu sitio web se está actualizando y estará listo en aproximadamente 1 minuto. Puedes seguir editando.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button onClick={onClose} className="w-full btn-apple h-9 text-xs">
+            Entendido
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ============================================================
 // Componente Principal: VisualEditor
 // ============================================================
@@ -161,6 +190,7 @@ export function VisualEditor({
   const [activeTab, setActiveTab] = useState('contenido');
   const [isSaving, setIsSaving] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedSeccion, setSelectedSeccion] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -413,24 +443,17 @@ export function VisualEditor({
         return;
       }
 
-      // Esperar 1.5 segundos para dar tiempo a GitHub a indexar el commit
-      setSyncStatus('syncing');
-      await new Promise((r) => setTimeout(r, 1500));
-
-      // Cargar HTML actualizado desde GitHub anulando caché del servidor y busteando CDN
-      const url = `/api/editor/load?sustratoId=${encodeURIComponent(sustratoId)}&nocache=1`;
-      const resLoad = await fetch(url);
-      if (!resLoad.ok) throw new Error('Error al recargar desde GitHub');
-      const loadData = await resLoad.json();
-      if (!loadData.success) throw new Error(loadData.error || 'Error al recargar');
-
-      setRawHtml(loadData.html || '');
-      setSeccionesApi(loadData.secciones || []);
-      setTotalCampos(loadData.totalCampos || 0);
+      // Actualizar el HTML y campos locales directamente en base a la vista previa generada
+      const parseResult = parseEditableSections(previewHtml);
+      setRawHtml(previewHtml);
+      setSeccionesApi(parseResult.secciones);
+      setTotalCampos(parseResult.totalCampos);
       setCamposEditados({}); // Limpiar cambios locales
 
       setSaveSuccess(true);
       setSyncStatus('success');
+      setShowSuccessModal(true); // Abrir el modal de éxito profesional
+
       setTimeout(() => {
         setSaveSuccess(false);
         setSyncStatus('idle');
@@ -717,6 +740,7 @@ export function VisualEditor({
       )}
 
       <LimitModal open={showLimitModal} onClose={() => setShowLimitModal(false)} cambios={cambiosEsteMes} max={MAX_CHANGES_FREE} />
+      <SuccessModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
 
       <footer className="bg-white border-t border-[#e5e5ea] py-2 text-center text-[10px] text-[#c7c7cc]">
         Palacio CMS v1.0 — Editor Visual

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured, type ClienteRow } from '@/lib/supabase';
+import { ensureVercelJson } from '@/lib/github-write';
 
 // ============================================================
 // Tipos
@@ -172,6 +173,13 @@ export async function POST(request: NextRequest) {
       }
 
       const row = data as ClienteRow;
+
+      // Asegurar que vercel.json existe en el repositorio del cliente
+      try {
+        await ensureVercelJson(row.repo_owner, row.repo_name, row.repo_branch);
+      } catch (err) {
+        console.error('[API Clientes POST] Error al crear vercel.json:', err);
+      }
 
       return NextResponse.json({
         success: true,

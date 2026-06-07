@@ -181,3 +181,53 @@ export async function commitFileToGitHub(params: {
     return { success: false, error: message };
   }
 }
+
+/**
+ * Asegura que exista el archivo vercel.json en el repositorio del cliente.
+ * Si no existe, lo crea con la configuración de caché ideal.
+ */
+export async function ensureVercelJson(
+  repoOwner: string,
+  repoName: string,
+  branch: string
+): Promise<CommitResult> {
+  if (!hasGitHubToken) {
+    console.warn('[GitHub Write] GITHUB_TOKEN no configurado. ensureVercelJson cancelado (simulación).');
+    return { success: true, simulation: true };
+  }
+
+  try {
+    const sha = await getFileSha(repoOwner, repoName, 'vercel.json', branch);
+    if (sha) {
+      console.log(`[GitHub Write] vercel.json ya existe en ${repoOwner}/${repoName}. No se sobreescribe.`);
+      return { success: true };
+    }
+
+    const vercelConfig = {
+      headers: [
+        {
+          source: "/(.*)",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=0, must-revalidate"
+            }
+          ]
+        }
+      ]
+    };
+
+    return await commitFileToGitHub({
+      repoOwner,
+      repoName,
+      branch,
+      filePath: 'vercel.json',
+      content: JSON.stringify(vercelConfig, null, 2),
+      message: 'Configurar caching automático para index.html (vercel.json)'
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    console.error('[GitHub Write] Error en ensureVercelJson:', message);
+    return { success: false, error: message };
+  }
+}
