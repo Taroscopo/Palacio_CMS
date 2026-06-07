@@ -84,6 +84,32 @@ export async function POST(request: NextRequest) {
     }
 
     // ----------------------------------------------------------
+    // ADMINISTRADOR MAESTRO (Acceso Global)
+    // ----------------------------------------------------------
+    if (email === 'admin@palacio.cms') {
+      if (password === 'admin123') {
+        return NextResponse.json<LoginSuccessResponse>({
+          success: true,
+          user: {
+            id: 'admin-master-001',
+            email: 'admin@palacio.cms',
+            nombre: 'Administrador Maestro',
+            rol: 'admin',
+            estadoSuscripcion: 'anual',
+            cambiosEsteMes: 0,
+            sustratoNombre: 'Panel de Control',
+            sustratoId: '',
+          },
+        });
+      } else {
+        return NextResponse.json<LoginErrorResponse>(
+          { success: false, error: 'Contraseña incorrecta para el administrador.' },
+          { status: 401 }
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
     // RUTA REAL: Supabase está configurado
     // Consulta la tabla 'clientes' buscando por email
     // ----------------------------------------------------------
