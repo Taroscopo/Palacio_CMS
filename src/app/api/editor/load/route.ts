@@ -258,6 +258,27 @@ function rewriteRelativeUrls(html: string, baseUrl: string): string {
   document.addEventListener('click', function(e) {
     var target = e.target;
     while (target && target !== document.body) {
+      if (target.tagName === 'A') {
+        var href = target.getAttribute('href');
+        if (href) {
+          if (href.startsWith('#')) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (href === '#') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              var targetId = href.substring(1);
+              var destEl = document.getElementById(targetId);
+              if (destEl) {
+                destEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }
+          } else {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      }
       if (target.hasAttribute && target.hasAttribute('data-editable')) {
         e.preventDefault();
         e.stopPropagation();
