@@ -671,7 +671,7 @@ export function VisualEditor({
       {/* Split Screen */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Panel Izquierdo — Editor */}
-        <div className="w-full lg:w-1/2 palacio-panel overflow-y-auto custom-scrollbar p-4 flex flex-col">
+        <div className="w-full lg:w-[30%] palacio-panel overflow-y-auto custom-scrollbar p-4 flex flex-col">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-3 bg-[#f5f5f7] rounded-lg h-10 p-0.5 mb-4">
               <TabsTrigger value="contenido" className="flex items-center gap-1.5 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:text-[#111111] data-[state=active]:shadow-sm text-[#86868b]">
@@ -747,7 +747,7 @@ export function VisualEditor({
         </div>
 
         {/* Panel Derecho — Vista Previa */}
-        <div className="w-full lg:w-1/2 p-4 flex flex-col">
+        <div className="w-full lg:w-[70%] p-4 flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
