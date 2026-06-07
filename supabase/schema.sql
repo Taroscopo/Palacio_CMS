@@ -15,6 +15,7 @@
 CREATE TABLE IF NOT EXISTS clientes (
   id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email         TEXT NOT NULL UNIQUE,
+  password      TEXT NOT NULL DEFAULT 'cliente123',
   nombre_sitio  TEXT,
   plan          TEXT NOT NULL DEFAULT 'gratis' CHECK (plan IN ('gratis', 'anual')),
   repo_owner    TEXT NOT NULL,
@@ -81,10 +82,10 @@ CREATE POLICY "Clientes pueden ver sus propios cambios"
 -- ============================================================
 -- Insertar solo si no existen (idempotente)
 
-INSERT INTO clientes (id, email, nombre_sitio, plan, repo_owner, repo_name, repo_branch)
+INSERT INTO clientes (id, email, password, nombre_sitio, plan, repo_owner, repo_name, repo_branch)
 VALUES
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'cliente@demo.com', 'Taroscopo — Web Prueba CMS', 'gratis', 'Taroscopo', 'WEB-PRUEBA-CMS', 'main'),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'premium@demo.com', 'Taroscopo — Landing Premium', 'anual', 'Taroscopo', 'WEB-PRUEBA-CMS', 'main')
+  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'cliente@demo.com', 'demo123', 'Taroscopo — Web Prueba CMS', 'gratis', 'Taroscopo', 'WEB-PRUEBA-CMS', 'main'),
+  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'premium@demo.com', 'premium123', 'Taroscopo — Landing Premium', 'anual', 'Taroscopo', 'WEB-PRUEBA-CMS', 'main')
 ON CONFLICT (email) DO NOTHING;
 
 -- Insertar un cambio de ejemplo para el cliente demo

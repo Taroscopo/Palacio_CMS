@@ -61,6 +61,7 @@ export const supabase: SupabaseClient = isSupabaseConfigured
 export interface ClienteRow {
   id: string;
   email: string;
+  password?: string;
   nombre_sitio: string | null;
   plan: 'gratis' | 'anual';
   repo_owner: string;

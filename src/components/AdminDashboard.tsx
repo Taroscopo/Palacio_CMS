@@ -101,6 +101,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [newClientName, setNewClientName] = useState('');
   const [newClientRepoOwner, setNewClientRepoOwner] = useState('');
   const [newClientRepoName, setNewClientRepoName] = useState('');
+  const [newClientPassword, setNewClientPassword] = useState('');
   const [isCreatingClient, setIsCreatingClient] = useState(false);
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
 
@@ -142,7 +143,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // ============================================================
 
   const handleCreateClient = async () => {
-    if (!newClientEmail || !newClientName || !newClientRepoOwner || !newClientRepoName) return;
+    if (!newClientEmail || !newClientName || !newClientRepoOwner || !newClientRepoName || !newClientPassword) return;
     setIsCreatingClient(true);
 
     try {
@@ -155,6 +156,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           repoOwner: newClientRepoOwner,
           repoName: newClientRepoName,
           repoBranch: 'main',
+          password: newClientPassword,
         }),
       });
       const data = await response.json();
@@ -165,6 +167,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setNewClientName('');
         setNewClientRepoOwner('');
         setNewClientRepoName('');
+        setNewClientPassword('');
         setShowNewClientDialog(false);
       } else {
         alert(data.error || 'Error al crear el cliente');
@@ -493,6 +496,16 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           className="input-apple"
                         />
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-[#111111]">Contraseña del cliente</Label>
+                        <Input
+                          placeholder="Mínimo 6 caracteres"
+                          type="password"
+                          value={newClientPassword}
+                          onChange={(e) => setNewClientPassword(e.target.value)}
+                          className="input-apple"
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium text-[#111111]">Repo Owner</Label>
@@ -520,7 +533,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </Button>
                       <Button
                         onClick={handleCreateClient}
-                        disabled={isCreatingClient || !newClientName || !newClientEmail || !newClientRepoOwner || !newClientRepoName}
+                        disabled={isCreatingClient || !newClientName || !newClientEmail || !newClientRepoOwner || !newClientRepoName || !newClientPassword}
                         className="btn-apple"
                       >
                         {isCreatingClient ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}

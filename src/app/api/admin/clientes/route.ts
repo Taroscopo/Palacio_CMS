@@ -125,11 +125,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, nombre, repoOwner, repoName, repoBranch } = body;
+    const { email, nombre, repoOwner, repoName, repoBranch, password } = body;
 
-    if (!email || !nombre || !repoOwner || !repoName) {
+    if (!email || !nombre || !repoOwner || !repoName || !password) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos obligatorios (email, nombre, repoOwner, repoName)' },
+        { success: false, error: 'Faltan campos obligatorios (email, nombre, repoOwner, repoName, password)' },
         { status: 400 }
       );
     }
@@ -148,7 +148,8 @@ export async function POST(request: NextRequest) {
           repo_owner: repoOwner,
           repo_name: repoName,
           repo_branch: branch,
-          plan: 'gratis'
+          plan: 'gratis',
+          password
         })
         .select()
         .single();

@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     if (isSupabaseConfigured) {
       const { data: cliente, error: clienteError } = await supabase
         .from('clientes')
-        .select('id, email, nombre_sitio, plan, repo_owner, repo_name')
+        .select('id, email, password, nombre_sitio, plan, repo_owner, repo_name')
         .eq('email', email)
         .single();
 
@@ -146,6 +146,14 @@ export async function POST(request: NextRequest) {
       }
 
       const row = cliente as ClienteRow;
+
+      // Validar contraseña del cliente
+      if (row.password && row.password !== password) {
+        return NextResponse.json<LoginErrorResponse>(
+          { success: false, error: 'Credenciales inválidas. Verifica tu correo y contraseña.' },
+          { status: 401 }
+        );
+      }
 
       // Contar cambios del mes actual para este cliente
       const inicioMes = new Date();
