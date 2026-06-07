@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { LayoutGrid, Loader2, AlertTriangle, AlignLeft } from 'lucide-react';
+import { LayoutGrid, Loader2, AlertTriangle, AlignLeft, History, RotateCcw } from 'lucide-react';
 import { X, Type, Image as ImageIcon, Link, Mail, Phone, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatSectionName, TIPO_CAMPO_LABEL } from './types';
@@ -54,7 +54,47 @@ export function ContenidoTab({
   uploadError,
   setUploadError,
   handleImageUpload,
+  isPremium = false,
+  historialCambios = [],
+  valoresIniciales = {},
 }: ContenidoTabProps) {
+  const [openHistoryCampoId, setOpenHistoryCampoId] = React.useState<string | null>(null);
+
+  const formatRelativeTime = (isoString: string) => {
+    if (!isoString) return 'Versión Original';
+    try {
+      const date = new Date(isoString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHrs = Math.floor(diffMins / 60);
+      
+      if (diffMins < 1) return 'Hace unos instantes';
+      if (diffMins < 60) return `Hace ${diffMins} min`;
+      if (diffHrs < 24) return `Hace ${diffHrs} hora${diffHrs > 1 ? 's' : ''}`;
+      return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return 'Cambio guardado';
+    }
+  };
+
+  const getHistorialFiltrado = (campoId: string, textoOriginal: string) => {
+    const filtrado = (historialCambios || [])
+      .filter((h) => h.campo_id === campoId && h.valor !== null && h.valor !== undefined)
+      .filter((item, index, self) => self.findIndex(t => t.valor === item.valor) === index);
+      
+    const ultimos5 = filtrado.slice(0, 5);
+
+    if (textoOriginal && !ultimos5.some(u => u.valor === textoOriginal)) {
+      ultimos5.push({
+        campo_id: campoId,
+        valor: textoOriginal,
+        creado_en: ''
+      });
+    }
+    
+    return ultimos5;
+  };
   const seccionSeleccionada = seccionesApi.find((s) => s.seccion === selectedSeccion);
 
   // ---- Loading ----
@@ -158,6 +198,19 @@ export function ContenidoTab({
                     >
                       &lt;{campo.etiquetaHtml}&gt;
                     </Badge>
+                    {isPremium && (
+                      <button
+                        type="button"
+                        onClick={() => setOpenHistoryCampoId(openHistoryCampoId === campo.id ? null : campo.id)}
+                        className={cn(
+                          "ml-auto p-1 rounded-md hover:bg-[#f5f5f7] transition-colors",
+                          openHistoryCampoId === campo.id ? "text-[#0e7490] bg-[#f5f5f7]" : "text-[#86868b]"
+                        )}
+                        title="Ver historial de versiones"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   {campo.tipoCampo === 'texto' || campo.tipoCampo === 'html' ? (
@@ -193,6 +246,56 @@ export function ContenidoTab({
                       )}
                       placeholder={campo.textoActual || label}
                     />
+                  )}
+
+                  {isPremium && openHistoryCampoId === campo.id && (
+                    <div className="bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl p-3 space-y-2 mt-2 animate-fade-in">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-[#111111] uppercase tracking-wider">Historial de Cambios</span>
+                        <button 
+                          type="button"
+                          onClick={() => setOpenHistoryCampoId(null)} 
+                          className="text-[#86868b] hover:text-[#111111]"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
+                        {getHistorialFiltrado(campo.id, valoresIniciales?.[campo.id] || campo.textoActual).map((hist, idx) => {
+                          const isCurrent = currentValue === hist.valor;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                handleCampoChange(campo.id, hist.valor);
+                              }}
+                              className={cn(
+                                "w-full text-left p-2 rounded-lg flex items-start gap-2.5 transition-all text-xs border border-transparent",
+                                isCurrent 
+                                  ? "bg-white border-[#e5e5ea] shadow-sm font-medium text-[#0e7490]" 
+                                  : "hover:bg-white hover:border-[#e5e5ea] text-[#111111]"
+                              )}
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#86868b]" />
+                              <div className="flex-1 min-w-0">
+                                <p className="truncate font-mono text-[11px] bg-[#f5f5f7] px-1.5 py-0.5 rounded border border-[#e5e5ea] inline-block max-w-full">
+                                  {hist.valor || '(vacío)'}
+                                </p>
+                                <p className="text-[10px] text-[#86868b] mt-1">
+                                  {formatRelativeTime(hist.creado_en)}
+                                </p>
+                              </div>
+                              {isCurrent && (
+                                <span className="text-[10px] bg-cyan-50 text-[#0e7490] px-1.5 py-0.5 rounded font-semibold self-center">
+                                  Actual
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                 </div>
               );

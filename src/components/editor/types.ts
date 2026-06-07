@@ -103,6 +103,9 @@ export interface ContenidoTabProps {
   uploadError: string | null;
   setUploadError: (error: string | null) => void;
   handleImageUpload: (campoId: string, e: React.ChangeEvent<HTMLInputElement>) => void;
+  isPremium?: boolean;
+  historialCambios?: Array<{ campo_id: string; valor: string; creado_en: string }>;
+  valoresIniciales?: Record<string, string>;
 }
 
 export interface DisenoTabProps {

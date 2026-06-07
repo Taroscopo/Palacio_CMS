@@ -75,6 +75,7 @@ interface SaveErrorResponse {
 interface CampoConSeccion {
   campoId: string;
   seccion: string;
+  valorOriginal: string;
 }
 
 function applyChangesToHtml(
@@ -122,28 +123,34 @@ function applyChangesToHtml(
 
     // Detectar tipo de elemento y aplicar cambio
     const tagName = el.prop('tagName')?.toLowerCase() ?? '';
+    let valorOriginal = '';
 
     if (tagName === 'img') {
       // Para imágenes: actualizar src
+      valorOriginal = el.attr('src') ?? '';
       el.attr('src', nuevoValor);
     } else if (tagName === 'a') {
       // Para enlaces: actualizar href si es mailto o tel, sino texto
       const currentHref = el.attr('href') ?? '';
       if (currentHref.startsWith('mailto:')) {
+        valorOriginal = currentHref.replace('mailto:', '');
         el.attr('href', `mailto:${nuevoValor}`);
         el.text(nuevoValor);
       } else if (currentHref.startsWith('tel:')) {
+        valorOriginal = currentHref.replace('tel:', '');
         el.attr('href', `tel:${nuevoValor}`);
         el.text(nuevoValor);
       } else {
+        valorOriginal = el.text() ?? '';
         el.text(nuevoValor);
       }
     } else {
       // Para texto, títulos, etc: actualizar contenido de texto
+      valorOriginal = el.text() ?? '';
       el.text(nuevoValor);
     }
 
-    camposConSeccion.push({ campoId, seccion });
+    camposConSeccion.push({ campoId, seccion, valorOriginal });
   }
 
   // ----------------------------------------------------------
@@ -402,11 +409,49 @@ export async function POST(request: NextRequest) {
     // Una fila por cada campo modificado
     // ----------------------------------------------------------
     if (isSupabaseConfigured && camposConSeccion.length > 0) {
-      const logRows = camposConSeccion.map(({ campoId, seccion }) => ({
-        cliente_id: clienteId,
-        seccion,
-        campo_id: campoId,
-      }));
+      // 1. Consultar si los campos ya tienen historial de cambios guardado con valor
+      const campoIds = camposConSeccion.map(c => c.campoId);
+      let fieldsWithLogs = new Set<string>();
+
+      try {
+        const { data: existingLogs, error: checkError } = await supabase
+          .from('cambios_log')
+          .select('campo_id')
+          .eq('cliente_id', clienteId)
+          .in('campo_id', campoIds);
+
+        if (!checkError && existingLogs) {
+          fieldsWithLogs = new Set(existingLogs.map(l => l.campo_id));
+        }
+      } catch (err) {
+        console.error('[API Save] Error al consultar logs existentes:', err);
+      }
+
+      const logRows: any[] = [];
+      const ahora = new Date();
+
+      camposConSeccion.forEach(({ campoId, seccion, valorOriginal }) => {
+        // Si es la primera vez que se edita este campo en la base de datos, guardar la versión original primero
+        if (!fieldsWithLogs.has(campoId)) {
+          const timestampOriginal = new Date(ahora.getTime() - 1000);
+          logRows.push({
+            cliente_id: clienteId,
+            seccion,
+            campo_id: campoId,
+            valor: valorOriginal,
+            creado_en: timestampOriginal.toISOString()
+          });
+        }
+
+        // Registrar el nuevo cambio
+        logRows.push({
+          cliente_id: clienteId,
+          seccion,
+          campo_id: campoId,
+          valor: camposEditados[campoId] || '',
+          creado_en: ahora.toISOString()
+        });
+      });
 
       const { error: logError } = await supabase
         .from('cambios_log')
@@ -427,10 +472,10 @@ export async function POST(request: NextRequest) {
           .eq('cliente_id', clienteId)
           .gte('creado_en', inicioMes.toISOString());
 
-        cambiosEsteMes = newCount ?? cambiosEsteMes + camposConSeccion.length;
+        cambiosEsteMes = newCount ?? cambiosEsteMes + logRows.length;
 
         console.log(
-          `[API Save] ${camposConSeccion.length} registro(s) insertados en cambios_log. Total mes: ${cambiosEsteMes}`
+          `[API Save] ${logRows.length} registro(s) insertados en cambios_log. Total mes: ${cambiosEsteMes}`
         );
       }
     } else if (!isSupabaseConfigured && camposConSeccion.length > 0) {

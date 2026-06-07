@@ -76,5 +76,6 @@ export interface CambioLogRow {
   cliente_id: string;
   seccion: string;
   campo_id: string;
+  valor?: string;
   creado_en: string;
 }

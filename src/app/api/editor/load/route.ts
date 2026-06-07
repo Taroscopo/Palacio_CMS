@@ -42,6 +42,7 @@ interface LoadSuccessResponse {
   html: string;
   totalCampos: number;
   source: 'github' | 'demo';
+  historial?: Array<{ campo_id: string; valor: string; creado_en: string }>;
 }
 
 interface LoadErrorResponse {
@@ -414,7 +415,25 @@ export async function GET(request: NextRequest) {
     const parseResult = parseEditableSections(rewrittenHtml);
 
     // ----------------------------------------------------------
-    // Paso 5: Retornar inventario completo al VisualEditor
+    // Paso 5: Consultar historial de cambios en Supabase (si está configurado)
+    // ----------------------------------------------------------
+    let historial: Array<{ campo_id: string; valor: string; creado_en: string }> = [];
+
+    if (isSupabaseConfigured) {
+      const { data: logData, error: logError } = await supabase
+        .from('cambios_log')
+        .select('campo_id, valor, creado_en')
+        .eq('cliente_id', sustratoId)
+        .order('creado_en', { ascending: false });
+
+      if (!logError && logData) {
+        // Filtrar filas que tienen valor guardado
+        historial = logData.filter((h: any) => h.valor !== null && h.valor !== undefined);
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Paso 6: Retornar inventario completo al VisualEditor
     // ----------------------------------------------------------
     const responseBody: LoadSuccessResponse = {
       success: true,
@@ -432,6 +451,7 @@ export async function GET(request: NextRequest) {
       html: rewrittenHtml,
       totalCampos: parseResult.totalCampos,
       source,
+      historial,
     };
 
     memoryCache.set(sustratoId, { response: responseBody, timestamp: Date.now() });

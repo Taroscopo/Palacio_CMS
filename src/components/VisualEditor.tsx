@@ -33,7 +33,6 @@ import {
   Zap,
   Crown,
   Check,
-  Github,
   Activity,
   X,
   RefreshCw,
@@ -157,8 +156,8 @@ function SuccessModal({ open, onClose }: { open: boolean; onClose: () => void })
                 <Check className="w-3.5 h-3.5 text-green-600" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#111111]">1. Guardado Seguro en GitHub</p>
-                <p className="text-[11px] text-[#86868b]">Completado e indexado correctamente en el repositorio.</p>
+                <p className="text-xs font-semibold text-[#111111]">1. Guardado Seguro</p>
+                <p className="text-[11px] text-[#86868b]">Cambios registrados correctamente en la nube.</p>
               </div>
             </div>
 
@@ -168,9 +167,9 @@ function SuccessModal({ open, onClose }: { open: boolean; onClose: () => void })
                 <RefreshCw className="w-3 h-3 text-[#0e7490]" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#111111]">2. Actualización de Servidores (Vercel)</p>
+                <p className="text-xs font-semibold text-[#111111]">2. Actualización del Sitio</p>
                 <p className="text-[11px] text-[#86868b]">
-                  Los servidores están compilando tu sitio web. Estará visible públicamente en aproximadamente <strong>30-45 segundos</strong>.
+                  Nuestros servidores están procesando la actualización de tu web. Estará lista al público en unos <strong>30-45 segundos</strong>.
                 </p>
               </div>
             </div>
@@ -226,6 +225,8 @@ export function VisualEditor({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showSimulacionToast, setShowSimulacionToast] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'saving' | 'syncing' | 'success' | 'error'>('idle');
+  const [historialCambios, setHistorialCambios] = useState<Array<{ campo_id: string; valor: string; creado_en: string }>>([]);
+  const [valoresIniciales, setValoresIniciales] = useState<Record<string, string>>({});
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const campoRefs = useRef<Record<string, HTMLElement>>({});
@@ -257,12 +258,21 @@ export function VisualEditor({
         const secciones: SeccionParseada[] = data.secciones || [];
         setSeccionesApi(secciones);
         setTotalCampos(data.totalCampos || 0);
+        if (data.historial) setHistorialCambios(data.historial);
 
         const vis: Record<string, boolean> = {};
         const ord: Record<string, number> = {};
-        secciones.forEach((s: SeccionParseada) => { vis[s.seccion] = true; ord[s.seccion] = s.orden; });
+        const initVals: Record<string, string> = {};
+        secciones.forEach((s: SeccionParseada) => { 
+          vis[s.seccion] = true; 
+          ord[s.seccion] = s.orden;
+          s.campos.forEach((c) => {
+            initVals[c.id] = c.textoActual;
+          });
+        });
         setSeccionVisibility(vis);
         setSeccionOrder(ord);
+        setValoresIniciales(initVals);
         if (secciones.length > 0) setSelectedSeccion(secciones[0].seccion);
         if (data.sustrato?.colorPrimario) setColorPrimario(data.sustrato.colorPrimario);
         setIsLoading(false);
@@ -414,6 +424,7 @@ export function VisualEditor({
       setRawHtml(data.html || '');
       setSeccionesApi(data.secciones || []);
       setTotalCampos(data.totalCampos || 0);
+      if (data.historial) setHistorialCambios(data.historial);
       setCamposEditados({}); // Limpiar cambios locales
       setSyncStatus('success');
       setTimeout(() => setSyncStatus('idle'), 3000);
@@ -477,6 +488,15 @@ export function VisualEditor({
       setRawHtml(previewHtml);
       setSeccionesApi(parseResult.secciones);
       setTotalCampos(parseResult.totalCampos);
+
+      // Prepend nuevos cambios locales al historialCambios
+      const nuevosHistorial = Object.entries(camposEditados).map(([campoId, valor]) => ({
+        campo_id: campoId,
+        valor: valor,
+        creado_en: new Date().toISOString()
+      }));
+      setHistorialCambios(prev => [...nuevosHistorial, ...prev]);
+
       setCamposEditados({}); // Limpiar cambios locales
 
       setSaveSuccess(true);
@@ -540,7 +560,7 @@ export function VisualEditor({
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
             <Loader2 className="w-8 h-8 text-[#86868b] animate-spin mx-auto" />
-            <p className="text-sm text-[#86868b]">Cargando contenido desde GitHub...</p>
+            <p className="text-sm text-[#86868b]">Cargando contenido de tu sitio web...</p>
           </div>
         </div>
       </div>
@@ -585,7 +605,6 @@ export function VisualEditor({
             <div>
               <h1 className="text-sm font-semibold text-[#111111] tracking-tight flex items-center gap-2">
                 Palacio CMS
-                {repoInfo && <Badge className="bg-[#f5f5f7] text-[#86868b] border-0 hover:bg-[#f5f5f7] text-[9px] font-mono tracking-normal px-1.5 py-0 h-4 select-none"><Github className="w-2.5 h-2.5 mr-0.5" />Repositorio: {repoInfo}</Badge>}
               </h1>
               <p className="text-[10px] text-[#86868b] -mt-0.5">{sustratoNombre}</p>
             </div>
@@ -682,6 +701,9 @@ export function VisualEditor({
                   uploadError={uploadError}
                   setUploadError={setUploadError}
                   handleImageUpload={handleImageUpload}
+                  isPremium={isPremium}
+                  historialCambios={historialCambios}
+                  valoresIniciales={valoresIniciales}
                 />
               </TabsContent>
               <TabsContent value="secciones" className="mt-0">
@@ -760,7 +782,7 @@ export function VisualEditor({
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
           <div className="bg-[#111111] text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 max-w-sm">
             <Shield className="w-4 h-4 text-amber-400 shrink-0" />
-            <p className="text-sm">Modo Simulación: Permisos de escritura de GitHub no configurados (GITHUB_TOKEN pendiente)</p>
+            <p className="text-sm">Modo Demostración: Servidores de publicación en modo de prueba (pendiente de sincronización externa)</p>
             <button onClick={() => setShowSimulacionToast(false)} className="text-white/60 hover:text-white ml-2">
               <X className="w-4 h-4" />
             </button>
