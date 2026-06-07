@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { LoginScreen } from '@/components/LoginScreen';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { VisualEditor } from '@/components/VisualEditor';
@@ -31,17 +31,34 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserState | null>(null);
 
   // ============================================================
+  // Cargar sesión guardada desde localStorage al montar el componente
+  // ============================================================
+  useEffect(() => {
+    const savedUser = localStorage.getItem('palacio_user');
+    const savedView = localStorage.getItem('palacio_view');
+    if (savedUser && savedView) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+        setCurrentView(savedView as AppView);
+      } catch (error) {
+        console.error('[Session Storage] Error cargando sesión previa:', error);
+      }
+    }
+  }, []);
+
+  // ============================================================
   // Manejo de Login (recibe datos de la API /auth/login)
   // ============================================================
 
   const handleLogin = useCallback((user: UserState) => {
     setCurrentUser(user);
 
-    if (user.rol === 'admin') {
-      setCurrentView('admin');
-    } else {
-      setCurrentView('editor');
-    }
+    const nextView = user.rol === 'admin' ? 'admin' : 'editor';
+    setCurrentView(nextView);
+
+    // Persistir sesión en el navegador
+    localStorage.setItem('palacio_user', JSON.stringify(user));
+    localStorage.setItem('palacio_view', nextView);
   }, []);
 
   // ============================================================
@@ -51,6 +68,10 @@ export default function Home() {
   const handleLogout = useCallback(() => {
     setCurrentUser(null);
     setCurrentView('login');
+
+    // Limpiar sesión en el navegador
+    localStorage.removeItem('palacio_user');
+    localStorage.removeItem('palacio_view');
   }, []);
 
   // ============================================================
