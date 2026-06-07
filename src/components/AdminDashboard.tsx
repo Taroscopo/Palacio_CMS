@@ -144,26 +144,37 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleCreateClient = async () => {
     if (!newClientEmail || !newClientName || !newClientRepoOwner || !newClientRepoName) return;
     setIsCreatingClient(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const newCliente: ClienteData = {
-      id: `local-${Date.now()}`,
-      email: newClientEmail,
-      nombre: newClientName,
-      plan: 'gratis',
-      repoOwner: newClientRepoOwner,
-      repoName: newClientRepoName,
-      repoBranch: 'main',
-      totalCambios: 0,
-    };
+    try {
+      const response = await fetch('/api/admin/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newClientEmail,
+          nombre: newClientName,
+          repoOwner: newClientRepoOwner,
+          repoName: newClientRepoName,
+          repoBranch: 'main',
+        }),
+      });
+      const data = await response.json();
 
-    setClientes((prev) => [...prev, newCliente]);
-    setNewClientEmail('');
-    setNewClientName('');
-    setNewClientRepoOwner('');
-    setNewClientRepoName('');
-    setIsCreatingClient(false);
-    setShowNewClientDialog(false);
+      if (data.success && data.cliente) {
+        setClientes((prev) => [...prev, data.cliente]);
+        setNewClientEmail('');
+        setNewClientName('');
+        setNewClientRepoOwner('');
+        setNewClientRepoName('');
+        setShowNewClientDialog(false);
+      } else {
+        alert(data.error || 'Error al crear el cliente');
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error creando cliente:', error);
+      alert('Error de conexión al crear el cliente');
+    } finally {
+      setIsCreatingClient(false);
+    }
   };
 
   const handleResetPassword = async () => {
