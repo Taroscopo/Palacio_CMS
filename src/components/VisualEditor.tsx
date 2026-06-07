@@ -136,23 +136,52 @@ function LimitModal({ open, onClose, cambios, max }: {
 function SuccessModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white border-[#e5e5ea] max-w-sm">
-        <DialogHeader>
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mx-auto mb-2">
-            <Check className="w-6 h-6 text-green-600" />
+      <DialogContent className="bg-white border-[#e5e5ea] max-w-sm p-6 rounded-2xl">
+        <DialogHeader className="space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center mx-auto animate-pulse">
+            <Activity className="w-6 h-6 text-[#0e7490]" />
           </div>
-          <DialogTitle className="text-[#111111] text-center text-base">¡Cambios Guardados!</DialogTitle>
+          <DialogTitle className="text-[#111111] text-center text-base font-semibold">
+            ¡Guardando Cambios en la Nube!
+          </DialogTitle>
           <DialogDescription className="text-[#86868b] text-center text-xs">
-            Tus modificaciones se han guardado de forma segura en GitHub.
+            Tus modificaciones se han guardado con éxito. El proceso de publicación está en marcha.
           </DialogDescription>
         </DialogHeader>
-        <div className="bg-[#f5f5f7] rounded-xl p-4 text-center space-y-2 text-xs text-[#86868b]">
-          <p className="font-medium text-[#111111] text-sm">🚀 Despliegue en curso</p>
-          <p>
-            Tu sitio web se está actualizando y estará listo en aproximadamente 1 minuto. Puedes seguir editando.
+
+        <div className="mt-4 space-y-4">
+          <div className="bg-[#f5f5f7] rounded-xl p-4 space-y-3.5">
+            {/* Step 1 */}
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                <Check className="w-3.5 h-3.5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#111111]">1. Guardado Seguro en GitHub</p>
+                <p className="text-[11px] text-[#86868b]">Completado e indexado correctamente en el repositorio.</p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0 mt-0.5 animate-spin">
+                <RefreshCw className="w-3 h-3 text-[#0e7490]" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#111111]">2. Actualización de Servidores (Vercel)</p>
+                <p className="text-[11px] text-[#86868b]">
+                  Los servidores están compilando tu sitio web. Estará visible públicamente en aproximadamente <strong>30-45 segundos</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-center text-[#86868b]">
+            💡 Puedes cerrar esta ventana y seguir editando. La publicación continuará en segundo plano.
           </p>
         </div>
-        <DialogFooter>
+
+        <DialogFooter className="mt-5">
           <Button onClick={onClose} className="w-full btn-apple h-9 text-xs">
             Entendido
           </Button>
