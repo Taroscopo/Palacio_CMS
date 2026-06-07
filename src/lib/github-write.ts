@@ -44,7 +44,10 @@ async function getFileSha(
 
     const res = await fetch(
       `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`,
-      { headers }
+      { 
+        headers,
+        cache: 'no-store'
+      }
     );
 
     if (!res.ok) return null;
@@ -75,6 +78,7 @@ export async function downloadHtmlLight(
       const res = await fetch(rawUrl, {
         method: 'GET',
         headers: { 'User-Agent': 'Palacio-CMS/1.0' },
+        cache: 'no-store',
         signal: AbortSignal.timeout(15_000),
       });
 

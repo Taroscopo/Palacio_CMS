@@ -229,6 +229,7 @@ export async function downloadIndexHtml(
         headers: {
           'User-Agent': 'Palacio-CMS/1.0',
         },
+        cache: 'no-store',
         signal: AbortSignal.timeout(15_000), // 15 segundos de timeout
       });
 
@@ -377,7 +378,10 @@ async function getFileSha(
 
     const res = await fetch(
       `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`,
-      { headers }
+      { 
+        headers,
+        cache: 'no-store'
+      }
     );
 
     if (!res.ok) {

@@ -97,7 +97,7 @@ interface CacheEntry {
 }
 
 const memoryCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL_MS = 0; // Desactivado para evitar retrasos de sincronización de cambios
 
 // ============================================================
 // Reescritura de URLs relativas → absolutas
