@@ -274,9 +274,8 @@ export function VisualEditor({
         const srcRegex = new RegExp(`(<[^>]*id=["']${escapeRegex(campoId)}["'][^>]*src=["'])[^"']*(["'])`, 'i');
         if (srcRegex.test(html)) html = html.replace(srcRegex, `$1${nuevoValor}$2`);
       } else {
-        const tag = campo.etiquetaHtml || 'span';
-        const tagRegex = new RegExp(`(<${escapeRegex(tag)}[^>]*id=["']${escapeRegex(campoId)}["'][^>]*>)([\\s\\S]*?)(<\\/${escapeRegex(tag)}>)`, 'i');
-        if (tagRegex.test(html)) html = html.replace(tagRegex, `$1${nuevoValor}$3`);
+        const tagRegex = new RegExp(`(<([a-zA-Z1-6]+)[^>]*id=["']${escapeRegex(campoId)}["'][^>]*>)([\\s\\S]*?)(<\\/\\2>)`, 'i');
+        if (tagRegex.test(html)) html = html.replace(tagRegex, `$1${nuevoValor}$4`);
       }
     }
     return html;

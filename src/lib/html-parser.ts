@@ -248,9 +248,7 @@ export function parseEditableSections(html: string): ParseResult {
     }
 
     const atributos = extraerAtributos(el);
-    const tagName =
-      (element as unknown as { tagName?: string }).tagName?.toLowerCase() ??
-      'div';
+    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
 
     seccionMap.get(seccion)!.push({
       id: elementId,
@@ -297,9 +295,7 @@ export function parseEditableSections(html: string): ParseResult {
     }
 
     const atributos = extraerAtributos(el);
-    const tagName =
-      (element as unknown as { tagName?: string }).tagName?.toLowerCase() ??
-      'div';
+    const tagName = el.prop('tagName')?.toLowerCase() ?? 'div';
 
     seccionMap.get(seccion)!.push({
       id: elementId,

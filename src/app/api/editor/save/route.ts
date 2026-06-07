@@ -121,7 +121,7 @@ function applyChangesToHtml(
     const seccion = ownSection || parentSection || 'general';
 
     // Detectar tipo de elemento y aplicar cambio
-    const tagName = (el.get(0) as unknown as { tagName?: string })?.tagName?.toLowerCase() ?? '';
+    const tagName = el.prop('tagName')?.toLowerCase() ?? '';
 
     if (tagName === 'img') {
       // Para imágenes: actualizar src
